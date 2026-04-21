@@ -59,9 +59,6 @@ func (c *Client) StreamDeployLogs(ctx context.Context, deploymentID string, out 
 
 	for {
 		received, err := c.runStream(ctx, deploymentID, state, out)
-		if err == nil {
-			return nil
-		}
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
