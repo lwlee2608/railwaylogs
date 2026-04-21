@@ -3,6 +3,7 @@ package config
 import (
 	"bytes"
 	_ "embed"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -53,13 +54,14 @@ func Load() (*Config, error) {
 	cfg := &Config{}
 
 	if err := a.ReadInConfig(); err != nil {
-		if strings.HasPrefix(err.Error(), "config file not found") {
-			writeDefaultConfig(filepath.Join(home, ".config", "railwaylog", "config.yaml"))
-			if err := a.ReadInConfig(); err != nil {
-				return cfg, nil
-			}
-		} else {
+		if !strings.HasPrefix(err.Error(), "config file not found") {
 			return nil, err
+		}
+		if err := writeDefaultConfig(filepath.Join(home, ".config", "railwaylog", "config.yaml")); err != nil {
+			return nil, fmt.Errorf("write default config: %w", err)
+		}
+		if err := a.ReadInConfig(); err != nil {
+			return nil, fmt.Errorf("read default config: %w", err)
 		}
 	}
 
@@ -83,11 +85,11 @@ func Load() (*Config, error) {
 //go:embed default_config.yaml
 var defaultConfigYAML []byte
 
-func writeDefaultConfig(path string) {
+func writeDefaultConfig(path string) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
-		return
+		return err
 	}
-	_ = os.WriteFile(path, defaultConfigYAML, 0644)
+	return os.WriteFile(path, defaultConfigYAML, 0644)
 }
 
 func backfillDefaults(path string) bool {
