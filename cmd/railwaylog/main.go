@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/lwlee2608/railwaylog/internal/railwaylog"
+	"github.com/lwlee2608/railwaylogs/internal/railwaylog"
 )
 
 var AppVersion = "dev"

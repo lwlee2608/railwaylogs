@@ -1,4 +1,4 @@
-module github.com/lwlee2608/railwaylog
+module github.com/lwlee2608/railwaylogs
 
 go 1.25.0
 

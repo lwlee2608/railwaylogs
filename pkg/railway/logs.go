@@ -11,7 +11,7 @@ import (
 
 	"github.com/coder/websocket"
 
-	"github.com/lwlee2608/railwaylog/internal/output"
+	"github.com/lwlee2608/railwaylogs/internal/output"
 )
 
 // errStreamComplete signals a clean graphql-transport-ws "complete" from the

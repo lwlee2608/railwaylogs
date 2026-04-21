@@ -9,9 +9,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/lwlee2608/railwaylog/internal/config"
-	"github.com/lwlee2608/railwaylog/internal/output"
-	"github.com/lwlee2608/railwaylog/pkg/railway"
+	"github.com/lwlee2608/railwaylogs/internal/config"
+	"github.com/lwlee2608/railwaylogs/internal/output"
+	"github.com/lwlee2608/railwaylogs/pkg/railway"
 )
 
 type Options struct {

@@ -4,8 +4,8 @@ import (
 	"errors"
 	"os"
 
-	"github.com/lwlee2608/railwaylog/internal/config"
-	"github.com/lwlee2608/railwaylog/pkg/railway"
+	"github.com/lwlee2608/railwaylogs/internal/config"
+	"github.com/lwlee2608/railwaylogs/pkg/railway"
 )
 
 // resolveLinked layers: CLI flags > config YAML > RAILWAY_*_ID env vars > ~/.railway/config.json.
