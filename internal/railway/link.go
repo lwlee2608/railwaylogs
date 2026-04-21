@@ -97,24 +97,19 @@ func findByCwd(rc *rawConfig) *rawLinkedProject {
 		return nil
 	}
 	cwd, err := os.Getwd()
-	if err == nil {
-		for dir := cwd; ; {
-			if p, ok := rc.Projects[dir]; ok {
-				return &p
-			}
-			parent := filepath.Dir(dir)
-			if parent == dir {
-				break
-			}
-			dir = parent
-		}
+	if err != nil {
+		return nil
 	}
-	if len(rc.Projects) == 1 {
-		for _, p := range rc.Projects {
+	for dir := cwd; ; {
+		if p, ok := rc.Projects[dir]; ok {
 			return &p
 		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return nil
+		}
+		dir = parent
 	}
-	return nil
 }
 
 // AuthFromEnv returns env-var-sourced auth if present: RAILWAY_TOKEN (project

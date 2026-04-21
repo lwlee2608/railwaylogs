@@ -27,8 +27,6 @@ func NewClient(auth *railway.Auth, httpEndpoint, wsEndpoint string) *Client {
 	}
 }
 
-func (c *Client) WSEndpoint() string { return c.wsEndpoint }
-
 func (c *Client) AuthHeader() (string, string) {
 	if c.auth.Kind == railway.TokenProjectAccess {
 		return "project-access-token", c.auth.Token

@@ -10,13 +10,6 @@ type RetryConfig struct {
 	BackoffMultiplier float64
 }
 
-var DefaultRetryConfig = RetryConfig{
-	MaxAttempts:       12,
-	InitialDelay:      1 * time.Second,
-	MaxDelay:          8 * time.Second,
-	BackoffMultiplier: 1.5,
-}
-
 // Backoff tracks retry state for a reconnect loop.
 type Backoff struct {
 	cfg     RetryConfig

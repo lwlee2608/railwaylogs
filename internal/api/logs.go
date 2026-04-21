@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/coder/websocket"
@@ -72,7 +72,7 @@ func (c *Client) StreamDeployLogs(ctx context.Context, deploymentID string, out 
 			return fmt.Errorf("log stream: %w (retries exhausted)", err)
 		}
 
-		fmt.Fprintf(os.Stderr, "railwaylog: stream closed (%v); reconnecting in %s\n", err, delay)
+		slog.Warn("stream closed; reconnecting", "error", err, "delay", delay)
 
 		select {
 		case <-ctx.Done():
@@ -101,12 +101,8 @@ func (c *Client) runStream(ctx context.Context, deploymentID string, state *stre
 		return false, fmt.Errorf("connection_init: %w", err)
 	}
 
-	ack, err := readMessage(ctx, conn)
-	if err != nil {
-		return false, fmt.Errorf("read ack: %w", err)
-	}
-	if ack.Type != "connection_ack" {
-		return false, fmt.Errorf("expected connection_ack, got %s: %s", ack.Type, ack.Payload)
+	if err := awaitConnectionAck(ctx, conn); err != nil {
+		return false, err
 	}
 
 	subPayload, err := json.Marshal(subscribePayload{
@@ -139,6 +135,7 @@ func (c *Client) runStream(ctx context.Context, deploymentID string, state *stre
 				return received, fmt.Errorf("decode next: %w", err)
 			}
 			for _, line := range p.Data.DeploymentLogs {
+				// Lexical compare relies on Railway emitting fixed-precision RFC3339 nanos.
 				if state.lastTimestamp != "" && line.Timestamp <= state.lastTimestamp {
 					continue
 				}
@@ -175,6 +172,29 @@ func writeJSON(ctx context.Context, conn *websocket.Conn, msg wsMessage) error {
 		return err
 	}
 	return conn.Write(ctx, websocket.MessageText, buf)
+}
+
+// awaitConnectionAck reads from the socket until it sees connection_ack,
+// tolerating server-initiated ping keepalives during init.
+func awaitConnectionAck(ctx context.Context, conn *websocket.Conn) error {
+	for {
+		msg, err := readMessage(ctx, conn)
+		if err != nil {
+			return fmt.Errorf("read ack: %w", err)
+		}
+		switch msg.Type {
+		case "connection_ack":
+			return nil
+		case "ping":
+			if err := writeJSON(ctx, conn, wsMessage{Type: "pong"}); err != nil {
+				return fmt.Errorf("pong during init: %w", err)
+			}
+		case "connection_error":
+			return fmt.Errorf("connection_error: %s", msg.Payload)
+		default:
+			return fmt.Errorf("expected connection_ack, got %s: %s", msg.Type, msg.Payload)
+		}
+	}
 }
 
 func readMessage(ctx context.Context, conn *websocket.Conn) (*wsMessage, error) {
