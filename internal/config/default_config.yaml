@@ -1,0 +1,16 @@
+log:
+  level: info
+  path: ""
+
+railway:
+  # Leave empty to auto-discover from ~/.railway/config.json or RAILWAY_*_ID env vars.
+  project_id: ""
+  environment_id: ""
+  service_id: ""
+  http_endpoint: "https://backboard.railway.com/graphql/v2"
+  ws_endpoint: "wss://backboard.railway.com/graphql/v2"
+
+reconnect:
+  max_attempts: 12
+  initial_delay_ms: 1000
+  max_delay_ms: 8000
