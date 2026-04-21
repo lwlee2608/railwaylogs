@@ -1,6 +1,6 @@
 GO = $(shell which go 2>/dev/null)
 
-APP             := railwaylog
+APP             := railwaylogs
 VERSION         ?= v0.1.0
 LDFLAGS         := -ldflags "-X main.AppVersion=$(VERSION)"
 PREFIX          := $(HOME)/.local
