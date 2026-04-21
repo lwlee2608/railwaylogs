@@ -32,10 +32,9 @@ type RailwayConfig struct {
 }
 
 type ReconnectConfig struct {
-	MaxAttempts       int     `mapstructure:"max_attempts"`
-	InitialDelayMs    int     `mapstructure:"initial_delay_ms"`
-	MaxDelayMs        int     `mapstructure:"max_delay_ms"`
-	BackoffMultiplier float64 `mapstructure:"backoff_multiplier"`
+	MaxAttempts    int `mapstructure:"max_attempts"`
+	InitialDelayMs int `mapstructure:"initial_delay_ms"`
+	MaxDelayMs     int `mapstructure:"max_delay_ms"`
 }
 
 func Load() (*Config, error) {

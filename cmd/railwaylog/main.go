@@ -91,10 +91,9 @@ func run() error {
 	writer := output.NewWriter(os.Stdout)
 
 	retry := api.RetryConfig{
-		MaxAttempts:       cfg.Reconnect.MaxAttempts,
-		InitialDelay:      time.Duration(cfg.Reconnect.InitialDelayMs) * time.Millisecond,
-		MaxDelay:          time.Duration(cfg.Reconnect.MaxDelayMs) * time.Millisecond,
-		BackoffMultiplier: cfg.Reconnect.BackoffMultiplier,
+		MaxAttempts:  cfg.Reconnect.MaxAttempts,
+		InitialDelay: time.Duration(cfg.Reconnect.InitialDelayMs) * time.Millisecond,
+		MaxDelay:     time.Duration(cfg.Reconnect.MaxDelayMs) * time.Millisecond,
 	}
 
 	return client.StreamDeployLogs(ctx, depID, writer, retry)

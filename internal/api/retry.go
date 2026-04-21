@@ -2,12 +2,13 @@ package api
 
 import "time"
 
+const backoffMultiplier = 1.5
+
 // RetryConfig mirrors Railway CLI's LOGS_RETRY_CONFIG.
 type RetryConfig struct {
-	MaxAttempts       int
-	InitialDelay      time.Duration
-	MaxDelay          time.Duration
-	BackoffMultiplier float64
+	MaxAttempts  int
+	InitialDelay time.Duration
+	MaxDelay     time.Duration
 }
 
 // Backoff tracks retry state for a reconnect loop.
@@ -28,7 +29,7 @@ func (b *Backoff) Next() (time.Duration, bool) {
 		return 0, false
 	}
 	d := b.delay
-	next := time.Duration(float64(b.delay) * b.cfg.BackoffMultiplier)
+	next := time.Duration(float64(b.delay) * backoffMultiplier)
 	if next > b.cfg.MaxDelay {
 		next = b.cfg.MaxDelay
 	}

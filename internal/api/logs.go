@@ -95,6 +95,8 @@ func (c *Client) runStream(ctx context.Context, deploymentID string, state *stre
 	if err != nil {
 		return false, fmt.Errorf("dial: %w", err)
 	}
+	// Railway log payloads can exceed the 32 KB default; remove the cap.
+	conn.SetReadLimit(-1)
 	defer conn.CloseNow()
 
 	if err := writeJSON(ctx, conn, wsMessage{Type: "connection_init", Payload: json.RawMessage("{}")}); err != nil {
