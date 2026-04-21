@@ -3,6 +3,7 @@ package config
 import (
 	"bytes"
 	_ "embed"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -43,32 +44,35 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
+	configDir := filepath.Join(home, ".config", "railwaylog")
+	configPath := filepath.Join(configDir, "config.yaml")
+
+	if _, err := os.Stat(configPath); err != nil {
+		if !errors.Is(err, os.ErrNotExist) {
+			return nil, fmt.Errorf("stat config: %w", err)
+		}
+		if err := writeDefaultConfig(configPath); err != nil {
+			return nil, fmt.Errorf("write default config: %w", err)
+		}
+	}
+
 	a := adder.New()
 	a.SetConfigName("config")
 	a.SetConfigType("yaml")
-	a.AddConfigPath(filepath.Join(home, ".config", "railwaylog"))
+	a.AddConfigPath(configDir)
 	a.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	a.AutomaticEnv()
 
 	cfg := &Config{}
 
 	if err := a.ReadInConfig(); err != nil {
-		if !strings.HasPrefix(err.Error(), "config file not found") {
-			return nil, err
-		}
-		if err := writeDefaultConfig(filepath.Join(home, ".config", "railwaylog", "config.yaml")); err != nil {
-			return nil, fmt.Errorf("write default config: %w", err)
-		}
-		if err := a.ReadInConfig(); err != nil {
-			return nil, fmt.Errorf("read default config: %w", err)
-		}
+		return nil, fmt.Errorf("read config: %w", err)
 	}
 
 	if err := a.Unmarshal(cfg); err != nil {
 		return nil, err
 	}
 
-	configPath := filepath.Join(home, ".config", "railwaylog", "config.yaml")
 	if backfillDefaults(configPath) {
 		if err := a.ReadInConfig(); err != nil {
 			return nil, err
