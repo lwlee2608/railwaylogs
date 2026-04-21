@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -12,6 +13,11 @@ import (
 
 	"github.com/lwlee2608/railwaylog/internal/output"
 )
+
+// errStreamComplete signals a clean graphql-transport-ws "complete" from the
+// server; StreamDeployLogs treats it as a terminal end-of-stream rather than
+// a reconnect trigger.
+var errStreamComplete = errors.New("server completed stream")
 
 const deploymentLogsSubscription = `subscription DeploymentLogs($deploymentId: String!, $filter: String, $limit: Int) {
   deploymentLogs(deploymentId: $deploymentId, filter: $filter, limit: $limit) {
@@ -61,6 +67,10 @@ func (c *Client) StreamDeployLogs(ctx context.Context, deploymentID string, out 
 		received, err := c.runStream(ctx, deploymentID, state, out)
 		if ctx.Err() != nil {
 			return ctx.Err()
+		}
+		if errors.Is(err, errStreamComplete) {
+			slog.Info("stream completed by server")
+			return nil
 		}
 
 		if received {
@@ -164,7 +174,7 @@ func (c *Client) runStream(ctx context.Context, deploymentID string, state *stre
 			return received, fmt.Errorf("server error: %s", msg.Payload)
 		case "complete":
 			conn.Close(websocket.StatusNormalClosure, "")
-			return received, fmt.Errorf("server closed stream")
+			return received, errStreamComplete
 		}
 	}
 }
